@@ -3,6 +3,8 @@ package org.apache.nifi.processor;
 import com.arangodb.ArangoDB;
 import com.arangodb.ArangoIterator;
 import com.arangodb.entity.BaseDocument;
+import org.apache.nifi.annotation.documentation.CapabilityDescription;
+import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.Validator;
@@ -22,6 +24,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Tags({ "query", "arangodb", "record" })
+@CapabilityDescription("This processor is intended to be used for fetching large volumes of data from ArangoDB. It uses " +
+        "the NiFi Record API to provide the ability serialize result sets in a clean and consistent manner. For deletes, updates " +
+        "and aggregation queries, see QueryArangoDB.")
 public class QueryArangoDBRecord extends AbstractArangoDBProcessor {
     public static final PropertyDescriptor RECORD_WRITER = new PropertyDescriptor.Builder()
         .name("arango-query-record-writer")
