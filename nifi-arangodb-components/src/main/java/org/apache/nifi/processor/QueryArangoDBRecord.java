@@ -23,14 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 public class QueryArangoDBRecord extends AbstractArangoDBProcessor {
-    public static final PropertyDescriptor QUERY = new PropertyDescriptor.Builder()
-        .name("arango-query")
-        .displayName("Query")
-        .expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_EL_VALIDATOR)
-        .description("An AQL query to execute.")
-        .build();
     public static final PropertyDescriptor RECORD_WRITER = new PropertyDescriptor.Builder()
         .name("arango-query-record-writer")
         .displayName("Record Writer")

@@ -6,12 +6,7 @@ import org.apache.nifi.json.JsonRecordSetWriter
 import org.apache.nifi.schema.access.SchemaAccessUtils
 import org.apache.nifi.serialization.RecordSetWriterFactory
 import org.apache.nifi.serialization.SimpleRecordSchema
-import org.apache.nifi.serialization.record.DataType
-import org.apache.nifi.serialization.record.MockSchemaRegistry
-import org.apache.nifi.serialization.record.RecordField
-import org.apache.nifi.serialization.record.RecordFieldType
-import org.apache.nifi.serialization.record.StandardSchemaIdentifier
-import org.junit.Assert
+import org.apache.nifi.serialization.record.*
 import org.junit.Before
 import org.junit.Test
 
@@ -39,7 +34,7 @@ class QueryArangoDBRecordIT extends AbstractArangoDBIT {
         runner.enableControllerService(schemaRegistry)
         runner.enableControllerService(writer)
         runner.enableControllerService(clientService)
-        runner.assertValid()
+
         arangoDB = clientService.getConnection()
         def messages = arangoDB.db("nifi").collection("messages")
         messages.insertDocument(new BaseDocument().with { doc ->
@@ -54,6 +49,7 @@ class QueryArangoDBRecordIT extends AbstractArangoDBIT {
 
     @Test
     void testRetrieveRecords() {
+        runner.setProperty(QueryArangoDBRecord.QUERY, "FOR message IN messages RETURN message")
         runner.enqueue("", [ "schema.name": "message"])
         runner.run()
         runner.assertTransferCount(QueryArangoDBRecord.REL_FAILURE, 0)

@@ -6,6 +6,14 @@ import org.apache.nifi.expression.ExpressionLanguageScope;
 import org.apache.nifi.processor.util.StandardValidators;
 
 public abstract class AbstractArangoDBProcessor extends AbstractProcessor {
+    public static final PropertyDescriptor QUERY = new PropertyDescriptor.Builder()
+        .name("arango-query")
+        .displayName("Query")
+        .expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_EL_VALIDATOR)
+        .description("An AQL query to execute.")
+        .build();
     public static final PropertyDescriptor CLIENT_SERVICE = new PropertyDescriptor.Builder()
         .name("arango-client-service")
         .displayName("Client Service")
