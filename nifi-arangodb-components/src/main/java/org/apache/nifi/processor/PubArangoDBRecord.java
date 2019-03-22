@@ -124,7 +124,7 @@ public class PubArangoDBRecord extends AbstractArangoDBProcessor {
                 document.setProperties(contentMap);
                 collection.insertDocument(document);
             }
-            
+
             reader.close();
             os.close();
             is.close();
