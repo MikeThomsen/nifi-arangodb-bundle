@@ -1,5 +1,6 @@
 package org.apache.nifi.processor
 
+import com.arangodb.ArangoDB
 import com.arangodb.entity.BaseDocument
 import org.apache.nifi.controller.ArangoDBClientService
 import org.apache.nifi.controller.ArangoDBClientServiceImpl
@@ -11,11 +12,13 @@ import org.apache.nifi.util.TestRunners
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.testng.Assert
 
 class PutArangoDBRecordIT {
     TestRunner runner
     ArangoDBClientService clientService
     RecordReaderFactory readerFactory
+    ArangoDB arangoDB
 
     @Before
     void setup() {
@@ -44,13 +47,14 @@ class PutArangoDBRecordIT {
 
         readerFactory.addRecord(1, "Hello, world", "john.smith", "jane.doe")
         readerFactory.addRecord(2, "Goodbye!", "jane.doe", "john.smith")
+
+        arangoDB = clientService.getConnection()
     }
 
     @After
     void tearDown() {
-        def arango = clientService.getConnection()
-        arango.db("nifi").query("FOR message IN messages REMOVE message IN messages", BaseDocument.class)
-        arango.shutdown()
+        arangoDB.db("nifi").query("FOR message IN messages REMOVE message IN messages", BaseDocument.class)
+        arangoDB.shutdown()
     }
 
     @Test
@@ -60,5 +64,8 @@ class PutArangoDBRecordIT {
 
         runner.assertTransferCount(PutArangoDBRecord.REL_FAILURE, 0)
         runner.assertTransferCount(PutArangoDBRecord.REL_SUCCESS, 1)
+
+        def count = arangoDB.db("nifi").query("FOR message IN messages COLLECT WITH COUNT INTO cnt RETURN cnt", Long.class).iterator().next()
+        Assert.assertEquals(2l, count)
     }
 }
