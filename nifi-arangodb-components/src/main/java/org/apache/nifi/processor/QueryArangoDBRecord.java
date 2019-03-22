@@ -90,9 +90,10 @@ public class QueryArangoDBRecord extends AbstractArangoDBProcessor {
             session.transfer(output, REL_SUCCESS);
             session.transfer(flowFile, REL_ORIGINAL);
         } catch (Exception ex) {
-
-        } finally {
+            getLogger().error("", ex);
             session.remove(output);
+            session.transfer(flowFile, REL_FAILURE);
+        } finally {
             connection.shutdown();
         }
     }
