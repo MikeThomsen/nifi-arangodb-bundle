@@ -11,15 +11,19 @@ import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.serialization.RecordSetWriter;
 import org.apache.nifi.serialization.RecordSetWriterFactory;
-import org.apache.nifi.serialization.RecordWriter;
 import org.apache.nifi.serialization.record.MapRecord;
 import org.apache.nifi.serialization.record.Record;
 import org.apache.nifi.serialization.record.RecordSchema;
 
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class QueryArangoDBRecord extends AbstractArangoDBProcessor {
-    public PropertyDescriptor QUERY = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor QUERY = new PropertyDescriptor.Builder()
         .name("arango-query")
         .displayName("Query")
         .expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)
@@ -27,13 +31,31 @@ public class QueryArangoDBRecord extends AbstractArangoDBProcessor {
         .addValidator(StandardValidators.NON_EMPTY_EL_VALIDATOR)
         .description("An AQL query to execute.")
         .build();
-    public PropertyDescriptor RECORD_WRITER = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor RECORD_WRITER = new PropertyDescriptor.Builder()
         .name("arango-query-record-writer")
         .displayName("Record Writer")
         .description("The record writer to use for writing the result set.")
         .required(true)
         .addValidator(Validator.VALID)
         .build();
+
+    public static final List<PropertyDescriptor> DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
+        CLIENT_SERVICE, QUERY, RECORD_WRITER, DATABASE_NAME
+    ));
+
+    public static final Set<Relationship> RELATIONSHIPS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+        REL_SUCCESS, REL_FAILURE, REL_ORIGINAL
+    )));
+
+    @Override
+    public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+        return DESCRIPTORS;
+    }
+
+    @Override
+    public Set<Relationship> getRelationships() {
+        return RELATIONSHIPS;
+    }
 
     private volatile RecordSetWriterFactory writerFactory;
 

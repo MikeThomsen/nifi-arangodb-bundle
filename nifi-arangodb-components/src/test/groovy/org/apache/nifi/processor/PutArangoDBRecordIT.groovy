@@ -1,6 +1,5 @@
 package org.apache.nifi.processor
 
-import com.arangodb.ArangoDB
 import org.apache.nifi.serialization.RecordReaderFactory
 import org.apache.nifi.serialization.record.MockRecordParser
 import org.apache.nifi.serialization.record.RecordFieldType
@@ -14,8 +13,9 @@ class PutArangoDBRecordIT extends AbstractArangoDBIT {
     @Before
     void setup() {
         readerFactory = new MockRecordParser()
-        super.setup()
+        super.setup(PutArangoDBRecord.class)
         runner.addControllerService("recordReader", readerFactory)
+        runner.setProperty(PutArangoDBRecord.COLLECTION_NAME, "messages")
         runner.setProperty(PutArangoDBRecord.RECORD_READER, "recordReader")
         runner.setProperty(PutArangoDBRecord.KEY_RECORD_PATH, "/id")
         runner.enableControllerService(clientService)

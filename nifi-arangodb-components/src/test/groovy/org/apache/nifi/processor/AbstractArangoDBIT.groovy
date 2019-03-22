@@ -13,17 +13,16 @@ class AbstractArangoDBIT {
     ArangoDBClientService clientService
     ArangoDB arangoDB
 
-    void setup() {
+    void setup(Class clz) {
         clientService = new ArangoDBClientServiceImpl()
-        runner = TestRunners.newTestRunner(PutArangoDBRecord.class)
+        runner = TestRunners.newTestRunner(clz)
         runner.addControllerService("clientService", clientService)
         runner.setProperty(clientService, ArangoDBClientServiceImpl.HOSTS, "localhost:8529")
         runner.setProperty(clientService, ArangoDBClientServiceImpl.LOAD_BALANCING_STRATEGY, ArangoDBClientServiceImpl.LOAD_BALANCE_RANDOM)
         runner.setProperty(clientService, ArangoDBClientServiceImpl.USERNAME, "root")
         runner.setProperty(clientService, ArangoDBClientServiceImpl.PASSWORD, "testing1234")
-        runner.setProperty(PutArangoDBRecord.CLIENT_SERVICE, "clientService")
-        runner.setProperty(PutArangoDBRecord.DATABASE_NAME, "nifi")
-        runner.setProperty(PutArangoDBRecord.COLLECTION_NAME, "messages")
+        runner.setProperty(AbstractArangoDBProcessor.CLIENT_SERVICE, "clientService")
+        runner.setProperty(AbstractArangoDBProcessor.DATABASE_NAME, "nifi")
     }
 
     @After
