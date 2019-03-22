@@ -3,6 +3,7 @@ package org.apache.nifi.processor;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.controller.ArangoDBClientService;
 import org.apache.nifi.expression.ExpressionLanguageScope;
+import org.apache.nifi.processor.util.StandardValidators;
 
 public abstract class AbstractArangoDBProcessor extends AbstractProcessor {
     public static final PropertyDescriptor CLIENT_SERVICE = new PropertyDescriptor.Builder()
@@ -18,11 +19,13 @@ public abstract class AbstractArangoDBProcessor extends AbstractProcessor {
         .description("The name of the database.")
         .required(true)
         .expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)
+        .addValidator(StandardValidators.NON_EMPTY_EL_VALIDATOR)
         .build();
     public static final PropertyDescriptor COLLECTION_NAME = new PropertyDescriptor.Builder()
         .name("arango-collection-name")
         .displayName("Collection Name")
         .description("The name of the collection.")
+        .addValidator(StandardValidators.NON_EMPTY_EL_VALIDATOR)
         .expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)
         .required(true)
         .build();
