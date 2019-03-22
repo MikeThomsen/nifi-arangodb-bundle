@@ -25,6 +25,19 @@ class AbstractArangoDBIT {
         runner.setProperty(AbstractArangoDBProcessor.DATABASE_NAME, "nifi")
     }
 
+    void setupTestDocuments() {
+        arangoDB = clientService.getConnection()
+        def messages = arangoDB.db("nifi").collection("messages")
+        messages.insertDocument(new BaseDocument().with { doc ->
+            doc.key = "1"
+            doc.properties = [ "from": "john.smith", "to": "jane.doe", "message": "Hi!"]
+        })
+        messages.insertDocument(new BaseDocument().with { doc ->
+            doc.key = "2"
+            doc.properties = [ "from": "jane.doe", "to": "john.smith", "message": "Bye!"]
+        })
+    }
+
     @After
     void tearDown() {
         if (arangoDB) {
