@@ -42,4 +42,9 @@ public abstract class AbstractArangoDBProcessor extends AbstractProcessor {
         .name("original")
         .description("When the operation succeeeds, the original input flowfile will go this relationship.")
         .build();
+
+    protected volatile ArangoDBClientService arangoDBClientService;
+    public void onScheduled(ProcessContext context) {
+        arangoDBClientService = context.getProperty(CLIENT_SERVICE).asControllerService(ArangoDBClientService.class);
+    }
 }

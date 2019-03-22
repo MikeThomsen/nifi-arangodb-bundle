@@ -7,7 +7,6 @@ import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.controller.ArangoDBClientService;
 import org.apache.nifi.expression.ExpressionLanguageScope;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.exception.ProcessException;
@@ -23,8 +22,6 @@ import org.apache.nifi.serialization.record.RecordFieldType;
 import org.apache.nifi.serialization.record.util.DataTypeUtils;
 
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,13 +67,12 @@ public class PutArangoDBRecord extends AbstractArangoDBProcessor {
         return DESCRIPTORS;
     }
 
-    private volatile ArangoDBClientService arangoDBClientService;
     private volatile RecordReaderFactory readerFactory;
     private volatile RecordPathCache recordPathCache;
 
     @OnScheduled
     public void onScheduled(ProcessContext context) {
-        arangoDBClientService = context.getProperty(CLIENT_SERVICE).asControllerService(ArangoDBClientService.class);
+        super.onScheduled(context);
         readerFactory = context.getProperty(RECORD_READER).asControllerService(RecordReaderFactory.class);
         recordPathCache = new RecordPathCache(25);
     }
