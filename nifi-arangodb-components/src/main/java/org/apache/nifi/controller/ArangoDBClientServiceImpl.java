@@ -7,12 +7,16 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.PropertyValue;
+import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.components.Validator;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -69,13 +73,58 @@ public class ArangoDBClientServiceImpl extends AbstractControllerService impleme
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
         .build();
 
+    public static final PropertyDescriptor USERNAME = new PropertyDescriptor.Builder()
+        .name("arangodb-client-service-username")
+        .displayName("Username")
+        .required(false)
+        .addValidator(Validator.VALID)
+        .description("The username for connecting to the database, if authentication is configured on the database.")
+        .build();
+    public static final PropertyDescriptor PASSWORD = new PropertyDescriptor.Builder()
+        .name("arangodb-client-service-password")
+        .displayName("Password")
+        .description("The password for connecting to the database, if authentication is configured on the database.")
+        .addValidator(Validator.VALID)
+        .required(false)
+        .build();
+    public static final PropertyDescriptor USE_AUTHENTICATION = new PropertyDescriptor.Builder()
+        .name("arangodb-client-service-use-authentication")
+        .displayName("Use Authentication")
+        .description("Control whether or not to use authentication when connecting to the database.")
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .required(true)
+        .allowableValues("true", "false")
+        .defaultValue("true")
+        .build();
+
     public static final List<PropertyDescriptor> PROPERTY_DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
-        HOSTS, LOAD_BALANCING_STRATEGY, FETCH_HOST_LIST
+        HOSTS, LOAD_BALANCING_STRATEGY, FETCH_HOST_LIST, USERNAME, PASSWORD, USE_AUTHENTICATION
     ));
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return PROPERTY_DESCRIPTORS;
+    }
+
+    @Override
+    public Collection<ValidationResult> customValidate(ValidationContext context) {
+        List<ValidationResult> problems = new ArrayList<>();
+        boolean useAuthentication = context.getProperty(USE_AUTHENTICATION).asBoolean();
+        if (useAuthentication) {
+            PropertyValue user = context.getProperty(USERNAME);
+            PropertyValue pass = context.getProperty(PASSWORD);
+            boolean userIsGood = user.isSet() && !StringUtils.isEmpty(user.getValue());
+            boolean passIsGood = pass.isSet() && !StringUtils.isEmpty(pass.getValue());
+
+            if (!userIsGood) {
+                problems.add(new ValidationResult.Builder().subject(USERNAME.getName()).input(user.getValue()).valid(false).build());
+            }
+            if (!passIsGood) {
+                problems.add(new ValidationResult.Builder().subject(PASSWORD.getName()).input(pass.getValue()).valid(false).build());
+            }
+        }
+
+        return problems;
     }
 
     private volatile ArangoDB.Builder builder;
@@ -100,6 +149,12 @@ public class ArangoDBClientServiceImpl extends AbstractControllerService impleme
 
         boolean fetchList = context.getProperty(FETCH_HOST_LIST).asBoolean();
         _builder = _builder.acquireHostList(fetchList);
+
+        if (context.getProperty(USE_AUTHENTICATION).asBoolean()) {
+            _builder = _builder.user(context.getProperty(USERNAME).getValue())
+                    .password(context.getProperty(PASSWORD).getValue());
+        }
+
         this.builder = _builder;
     }
 

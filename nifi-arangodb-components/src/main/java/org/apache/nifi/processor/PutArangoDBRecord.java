@@ -57,7 +57,7 @@ public class PutArangoDBRecord extends AbstractArangoDBProcessor {
     ));
 
     public static final Set<Relationship> RELATIONSHIPS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-        REL_SUCCESS, REL_FAILURE, REL_ORIGINAL
+        REL_SUCCESS, REL_FAILURE
     )));
 
     @Override
@@ -102,10 +102,8 @@ public class PutArangoDBRecord extends AbstractArangoDBProcessor {
             return;
         }
 
-        FlowFile output = session.create(flowFile);
         ArangoDB db = arangoDBClientService.getConnection();
-        try (InputStream is = session.read(flowFile);
-             OutputStream os = session.write(output)) {
+        try (InputStream is = session.read(flowFile)) {
             String recordPath = context.getProperty(KEY_RECORD_PATH).evaluateAttributeExpressions(flowFile).getValue();
             String dbName = context.getProperty(DATABASE_NAME).evaluateAttributeExpressions(flowFile).getValue();
             String colName = context.getProperty(COLLECTION_NAME).evaluateAttributeExpressions(flowFile).getValue();
@@ -126,14 +124,11 @@ public class PutArangoDBRecord extends AbstractArangoDBProcessor {
             }
 
             reader.close();
-            os.close();
             is.close();
 
-            session.transfer(output, REL_SUCCESS);
-            session.transfer(flowFile, REL_ORIGINAL);
+            session.transfer(flowFile, REL_SUCCESS);
         } catch (Exception ex) {
             getLogger().error("Failed processing record set.", ex);
-            session.remove(output);
             session.transfer(flowFile, REL_FAILURE);
         } finally {
             db.shutdown();
