@@ -35,7 +35,7 @@ import java.util.Set;
 
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({ "record", "put", "arango" })
-public class PubArangoDBRecord extends AbstractArangoDBProcessor {
+public class PutArangoDBRecord extends AbstractArangoDBProcessor {
     public static final PropertyDescriptor RECORD_READER = new PropertyDescriptor.Builder()
         .name("put-arango-record-record-reader")
         .displayName("Record Reader")
