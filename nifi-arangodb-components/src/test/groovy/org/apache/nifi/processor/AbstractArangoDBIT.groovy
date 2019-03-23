@@ -27,7 +27,10 @@ class AbstractArangoDBIT {
 
     void setupTestDocuments() {
         arangoDB = clientService.getConnection()
-        def messages = arangoDB.db("nifi").collection("messages")
+        def db = arangoDB.db("nifi");
+        db.create()
+        db.collection("messages").create()
+        def messages = db.collection("messages")
         messages.insertDocument(new BaseDocument().with { doc ->
             doc.key = "1"
             doc.properties = [ "from": "john.smith", "to": "jane.doe", "message": "Hi!"]
@@ -41,7 +44,7 @@ class AbstractArangoDBIT {
     @After
     void tearDown() {
         if (arangoDB) {
-            arangoDB.db("nifi").query("FOR message IN messages REMOVE message IN messages", BaseDocument.class)
+            arangoDB.db("nifi").drop()
             arangoDB.shutdown()
         }
     }

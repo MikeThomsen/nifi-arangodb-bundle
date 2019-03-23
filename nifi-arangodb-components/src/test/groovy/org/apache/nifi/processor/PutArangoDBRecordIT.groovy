@@ -30,6 +30,8 @@ class PutArangoDBRecordIT extends AbstractArangoDBIT {
         readerFactory.addRecord(1, "Hello, world", "john.smith", "jane.doe")
         readerFactory.addRecord(2, "Goodbye!", "jane.doe", "john.smith")
         arangoDB = clientService.getConnection()
+        arangoDB.db("nifi").create()
+        arangoDB.db("nifi").createCollection("messages")
     }
 
     @Test
