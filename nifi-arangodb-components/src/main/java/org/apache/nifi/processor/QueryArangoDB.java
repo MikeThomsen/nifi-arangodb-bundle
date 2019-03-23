@@ -32,7 +32,7 @@ public class QueryArangoDB extends AbstractArangoDBProcessor {
     ));
 
     public static final Set<Relationship> RELATIONSHIPS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-        REL_SUCCESS, REL_ORIGINAL
+        REL_SUCCESS, REL_ORIGINAL, REL_FAILURE
     )));
 
     @Override
@@ -68,6 +68,8 @@ public class QueryArangoDB extends AbstractArangoDBProcessor {
                 if (next instanceof BaseDocument) {
                     BaseDocument doc = (BaseDocument)next;
                     map = doc.getProperties();
+                } else if (next instanceof Map) {
+                    map = (Map<String, Object>)next;
                 } else if (next instanceof Number) {
                     map = new HashMap<String, Object>(){{
                         put("result", next);

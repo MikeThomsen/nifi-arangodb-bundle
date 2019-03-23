@@ -48,6 +48,8 @@ public class ArangoDBClientServiceImpl extends AbstractControllerService impleme
         })
         .build();
 
+    public static final AllowableValue LOAD_BALANCE_NONE = new AllowableValue("none", "None",
+            "No load balancing.");
     public static final AllowableValue LOAD_BALANCE_ROUND_ROBIN = new AllowableValue("round_robin", "Round Robin",
             "Use the Round Robin load balancing strategy");
     public static final AllowableValue LOAD_BALANCE_RANDOM = new AllowableValue("random", "Random",
@@ -57,8 +59,8 @@ public class ArangoDBClientServiceImpl extends AbstractControllerService impleme
         .displayName("Load Balancing Strategy")
         .description("Set the load-balancing strategy for the driver.")
         .required(true)
-        .allowableValues(LOAD_BALANCE_RANDOM, LOAD_BALANCE_ROUND_ROBIN)
-        .defaultValue(LOAD_BALANCE_ROUND_ROBIN.getValue())
+        .allowableValues(LOAD_BALANCE_NONE, LOAD_BALANCE_RANDOM, LOAD_BALANCE_ROUND_ROBIN)
+        .defaultValue(LOAD_BALANCE_NONE.getValue())
         .addValidator(Validator.VALID)
         .build();
 

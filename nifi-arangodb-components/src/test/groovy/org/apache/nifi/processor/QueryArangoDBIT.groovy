@@ -1,6 +1,7 @@
 package org.apache.nifi.processor
 
 import groovy.json.JsonSlurper
+import org.apache.nifi.flowfile.FlowFile
 import org.junit.Before
 import org.junit.Test
 
@@ -47,5 +48,38 @@ class QueryArangoDBIT extends AbstractArangoDBIT {
         runner.assertTransferCount(QueryArangoDB.REL_FAILURE, 0)
         runner.assertTransferCount(QueryArangoDB.REL_SUCCESS, 0)
         runner.assertTransferCount(QueryArangoDB.REL_ORIGINAL, 1)
+    }
+
+    @Test
+    void testRetrieve() {
+        runner.setProperty(QueryArangoDB.QUERY, """
+            FOR message IN messages RETURN message
+        """)
+        runner.run()
+        runner.assertTransferCount(QueryArangoDB.REL_FAILURE, 0)
+        runner.assertTransferCount(QueryArangoDB.REL_SUCCESS, 2)
+        runner.assertTransferCount(QueryArangoDB.REL_ORIGINAL, 0)
+
+        for (FlowFile ff : runner.getFlowFilesForRelationship(QueryArangoDB.REL_SUCCESS)) {
+            byte[] raw = runner.getContentAsByteArray(ff)
+            String str = new String(raw)
+            def parsed = new JsonSlurper().parseText(str)
+            assert parsed?.size() >= 4
+            assert parsed["to"]
+            assert parsed["from"]
+            assert parsed["message"]
+        }
+    }
+
+    @Test
+    void testBadQuery() {
+        runner.setProperty(QueryArangoDB.QUERY, """
+            DO nothing NOW
+        """)
+        runner.enqueue("")
+        runner.run()
+        runner.assertTransferCount(QueryArangoDB.REL_FAILURE, 1)
+        runner.assertTransferCount(QueryArangoDB.REL_SUCCESS, 0)
+        runner.assertTransferCount(QueryArangoDB.REL_ORIGINAL, 0)
     }
 }
