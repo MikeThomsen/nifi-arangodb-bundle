@@ -82,4 +82,20 @@ class QueryArangoDBIT extends AbstractArangoDBIT {
         runner.assertTransferCount(QueryArangoDB.REL_SUCCESS, 0)
         runner.assertTransferCount(QueryArangoDB.REL_ORIGINAL, 0)
     }
+
+    @Test
+    void testDelete() {
+        arangoDB.db("nifi").createCollection("users")
+        arangoDB.db("nifi").query("""
+            INSERT { username: "john.smith" } IN users
+        """, Object.class)
+        runner.setProperty(QueryArangoDB.QUERY, """
+            FOR user IN users REMOVE user IN users
+        """)
+        runner.enqueue("")
+        runner.run()
+        runner.assertTransferCount(QueryArangoDB.REL_FAILURE, 0)
+        runner.assertTransferCount(QueryArangoDB.REL_SUCCESS, 0)
+        runner.assertTransferCount(QueryArangoDB.REL_ORIGINAL, 1)
+    }
 }
