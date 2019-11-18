@@ -45,6 +45,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-ssl-context-service-api</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
                 <artifactId>nifi-avro-record-utils</artifactId>
                 <version>${nifi.version}</version>
             </dependency>
