@@ -34,6 +34,7 @@ public class QueryArangoDBRecord extends AbstractArangoDBProcessor {
         .displayName("Record Writer")
         .description("The record writer to use for writing the result set.")
         .required(true)
+        .identifiesControllerService(RecordSetWriterFactory.class)
         .addValidator(Validator.VALID)
         .build();
 
