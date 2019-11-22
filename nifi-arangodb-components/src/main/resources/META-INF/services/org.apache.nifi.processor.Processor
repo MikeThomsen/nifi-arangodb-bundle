@@ -1,2 +1,3 @@
 org.apache.nifi.processor.PutArangoDBRecord
 org.apache.nifi.processor.QueryArangoDBRecord
+org.apache.nifi.processor.QueryArangoDB
