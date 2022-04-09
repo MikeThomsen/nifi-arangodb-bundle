@@ -9,27 +9,13 @@
     <packaging>pom</packaging>
 
     <properties>
-        <nifi.version>1.11.4</nifi.version>
+        <nifi.version>1.15.3</nifi.version>
     </properties>
 
     <modules>
         <module>nifi-arangodb-components</module>
         <module>nifi-arangodb-nar</module>
     </modules>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>bintray</id>
-            <name>Groovy Bintray</name>
-            <url>https://dl.bintray.com/groovy/maven</url>
-            <releases>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
     <dependencyManagement>
         <dependencies>
@@ -127,7 +113,7 @@
                 <plugin>
                     <groupId>org.codehaus.groovy</groupId>
                     <artifactId>groovy-eclipse-compiler</artifactId>
-                    <version>3.0.0-01</version>
+                    <version>3.7.0</version>
                     <extensions>true</extensions>
                 </plugin>
                 <plugin>
@@ -197,12 +183,12 @@
                     <dependency>
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-eclipse-compiler</artifactId>
-                        <version>3.0.0-01</version>
+                        <version>3.7.0</version>
                     </dependency>
                     <dependency>
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-eclipse-batch</artifactId>
-                        <version>2.5.2-01</version>
+                        <version>3.0.8-01</version>
                     </dependency>
                 </dependencies>
             </plugin>
