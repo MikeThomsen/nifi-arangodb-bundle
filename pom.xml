@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <nifi.version>1.15.3</nifi.version>
+        <nifi.version>1.23.0</nifi.version>
     </properties>
 
     <modules>
