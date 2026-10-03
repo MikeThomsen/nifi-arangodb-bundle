@@ -1,9 +1,26 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.nifi.processor;
 
 import com.arangodb.ArangoCollection;
 import com.arangodb.ArangoDB;
 import com.arangodb.entity.BaseDocument;
 import org.apache.nifi.annotation.behavior.InputRequirement;
+import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -22,9 +39,6 @@ import org.apache.nifi.serialization.record.RecordFieldType;
 import org.apache.nifi.serialization.record.util.DataTypeUtils;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +46,7 @@ import java.util.Set;
 
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({ "record", "put", "arango" })
+@CapabilityDescription("Reads a record set from an incoming flowfile and inserts each record into an ArangoDB collection as a document.")
 public class PutArangoDBRecord extends AbstractArangoDBProcessor {
     public static final PropertyDescriptor RECORD_READER = new PropertyDescriptor.Builder()
         .name("put-arango-record-record-reader")
@@ -49,13 +64,13 @@ public class PutArangoDBRecord extends AbstractArangoDBProcessor {
         .expressionLanguageSupported(ExpressionLanguageScope.FLOWFILE_ATTRIBUTES)
         .build();
 
-    public static final List<PropertyDescriptor> DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
+    public static final List<PropertyDescriptor> DESCRIPTORS = List.of(
         CLIENT_SERVICE, RECORD_READER, KEY_RECORD_PATH, DATABASE_NAME, COLLECTION_NAME
-    ));
+    );
 
-    public static final Set<Relationship> RELATIONSHIPS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    public static final Set<Relationship> RELATIONSHIPS = Set.of(
         REL_SUCCESS, REL_FAILURE
-    )));
+    );
 
     @Override
     public Set<Relationship> getRelationships() {
@@ -106,21 +121,19 @@ public class PutArangoDBRecord extends AbstractArangoDBProcessor {
             ArangoCollection collection = db.db(dbName).collection(colName);
 
             RecordPath keyPath = recordPathCache.getCompiled(recordPath);
-            RecordReader reader = readerFactory.createRecordReader(flowFile, is, getLogger());
-            Record record;
-
-            while ((record = reader.nextRecord()) != null) {
-                String key = getKey(record, keyPath);
-                Map<String, Object> contentMap = (Map<String, Object>) DataTypeUtils
-                        .convertRecordFieldtoObject(record, RecordFieldType.RECORD.getRecordDataType(record.getSchema()));
-                BaseDocument document = new BaseDocument();
-                document.setKey(key);
-                document.setProperties(contentMap);
-                collection.insertDocument(document);
+            try (RecordReader reader = readerFactory.createRecordReader(flowFile, is, getLogger())) {
+                Record record;
+                while ((record = reader.nextRecord()) != null) {
+                    String key = getKey(record, keyPath);
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> contentMap = (Map<String, Object>) DataTypeUtils
+                            .convertRecordFieldtoObject(record, RecordFieldType.RECORD.getRecordDataType(record.getSchema()));
+                    BaseDocument document = new BaseDocument();
+                    document.setKey(key);
+                    document.setProperties(contentMap);
+                    collection.insertDocument(document);
+                }
             }
-
-            reader.close();
-            is.close();
 
             session.transfer(flowFile, REL_SUCCESS);
         } catch (Exception ex) {

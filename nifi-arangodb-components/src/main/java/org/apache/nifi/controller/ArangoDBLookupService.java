@@ -1,7 +1,23 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.nifi.controller;
 
+import com.arangodb.ArangoCursor;
 import com.arangodb.ArangoDB;
-import com.arangodb.ArangoIterator;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
@@ -16,7 +32,6 @@ import org.apache.nifi.serialization.record.MapRecord;
 import org.apache.nifi.serialization.record.Record;
 import org.apache.nifi.serialization.record.RecordSchema;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,22 +53,22 @@ public class ArangoDBLookupService extends JsonInferenceSchemaRegistryService im
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return Collections.unmodifiableList(Arrays.asList(
+        return List.of(
             CLIENT_SERVICE,
             new PropertyDescriptor.Builder()
                 .fromPropertyDescriptor(DATABASE_NAME)
-                .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
+                .expressionLanguageSupported(ExpressionLanguageScope.ENVIRONMENT)
                 .build(),
             new PropertyDescriptor.Builder()
                 .fromPropertyDescriptor(QUERY)
-                .expressionLanguageSupported(ExpressionLanguageScope.VARIABLE_REGISTRY)
+                .expressionLanguageSupported(ExpressionLanguageScope.ENVIRONMENT)
                 .build(),
             new PropertyDescriptor.Builder()
                 .fromPropertyDescriptor(SCHEMA_ACCESS_STRATEGY)
                 .allowableValues(STRATEGIES)
                 .defaultValue(getDefaultSchemaAccessStrategy().getValue())
                 .build()
-        ));
+        );
     }
 
     private volatile ArangoDBClientService clientService;
@@ -77,30 +92,29 @@ public class ArangoDBLookupService extends JsonInferenceSchemaRegistryService im
     public Optional<Record> lookup(Map<String, Object> coordinates, Map<String, String> context) throws LookupFailureException {
         ArangoDB connection = clientService.getConnection();
         try {
-            Map<String, Object> params = new HashMap<>();
-            params.putAll(coordinates);
+            Map<String, Object> params = new HashMap<>(coordinates);
             params.putAll(context);
-            ArangoIterator<Object> iterator = connection.db(databaseName).query(query, params, Object.class).iterator();
-            Record record = null;
-            if (iterator.hasNext()) {
-                Object next = iterator.next();
-                if (next instanceof Map) {
-                    Map<String, Object> doc = (Map<String, Object>)next;
+
+            try (ArangoCursor<Object> cursor = connection.db(databaseName).query(query, Object.class, params)) {
+                Record record = null;
+                if (cursor.hasNext() && cursor.next() instanceof Map<?, ?> next) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> doc = (Map<String, Object>) next;
                     RecordSchema schema = loadSchema(context, doc);
                     record = new MapRecord(schema, doc);
                 }
-            }
 
-            return Optional.ofNullable(record);
+                return Optional.ofNullable(record);
+            }
         } catch (Exception ex) {
-            getLogger().error("", ex);
+            getLogger().error("Lookup against database {} failed.", databaseName, ex);
             throw new LookupFailureException(ex);
         } finally {
             connection.shutdown();
         }
     }
 
-    private RecordSchema loadSchema(Map<String, String> context, Map doc) throws LookupFailureException {
+    private RecordSchema loadSchema(Map<String, String> context, Map<String, Object> doc) throws LookupFailureException {
         try {
             return getSchema(context, doc, null);
         } catch (Exception ex) {

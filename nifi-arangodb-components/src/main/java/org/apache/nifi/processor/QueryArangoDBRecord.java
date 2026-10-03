@@ -1,16 +1,30 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.nifi.processor;
 
+import com.arangodb.ArangoCursor;
 import com.arangodb.ArangoDB;
-import com.arangodb.ArangoIterator;
 import com.arangodb.entity.BaseDocument;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.Validator;
-import org.apache.nifi.expression.ExpressionLanguageScope;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.serialization.RecordSetWriter;
 import org.apache.nifi.serialization.RecordSetWriterFactory;
 import org.apache.nifi.serialization.record.MapRecord;
@@ -18,10 +32,8 @@ import org.apache.nifi.serialization.record.Record;
 import org.apache.nifi.serialization.record.RecordSchema;
 
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Tags({ "query", "arangodb", "record" })
@@ -38,13 +50,13 @@ public class QueryArangoDBRecord extends AbstractArangoDBProcessor {
         .addValidator(Validator.VALID)
         .build();
 
-    public static final List<PropertyDescriptor> DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
+    public static final List<PropertyDescriptor> DESCRIPTORS = List.of(
         CLIENT_SERVICE, QUERY, RECORD_WRITER, DATABASE_NAME
-    ));
+    );
 
-    public static final Set<Relationship> RELATIONSHIPS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    public static final Set<Relationship> RELATIONSHIPS = Set.of(
         REL_SUCCESS, REL_FAILURE, REL_ORIGINAL
-    )));
+    );
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -68,30 +80,35 @@ public class QueryArangoDBRecord extends AbstractArangoDBProcessor {
     public void onTrigger(ProcessContext context, ProcessSession session) {
         FlowFile flowFile = session.get();
         FlowFile output = flowFile != null ? session.create(flowFile) : session.create();
+        Map<String, String> attributes = flowFile != null ? flowFile.getAttributes() : Map.of();
         ArangoDB connection = arangoDBClientService.getConnection();
 
         try (OutputStream os = session.write(output)) {
             String query = context.getProperty(QUERY).evaluateAttributeExpressions(flowFile).getValue();
             String dbName = context.getProperty(DATABASE_NAME).evaluateAttributeExpressions(flowFile).getValue();
-            RecordSchema schema = writerFactory.getSchema(flowFile.getAttributes(), null);
-            RecordSetWriter writer = writerFactory.createWriter(getLogger(), schema, os);
-            ArangoIterator<BaseDocument> results = connection.db(dbName).query(query, BaseDocument.class).iterator();
-            writer.beginRecordSet();
-            while (results.hasNext()) {
-                BaseDocument document = results.next();
-                Record record = new MapRecord(schema, document.getProperties());
-                writer.write(record);
+            RecordSchema schema = writerFactory.getSchema(attributes, null);
+
+            try (RecordSetWriter writer = writerFactory.createWriter(getLogger(), schema, os, attributes);
+                 ArangoCursor<BaseDocument> results = connection.db(dbName).query(query, BaseDocument.class)) {
+                writer.beginRecordSet();
+                while (results.hasNext()) {
+                    BaseDocument document = results.next();
+                    Record record = new MapRecord(schema, document.getProperties());
+                    writer.write(record);
+                }
+                writer.finishRecordSet();
             }
-            writer.finishRecordSet();
-            writer.close();
-            os.close();
 
             session.transfer(output, REL_SUCCESS);
-            session.transfer(flowFile, REL_ORIGINAL);
+            if (flowFile != null) {
+                session.transfer(flowFile, REL_ORIGINAL);
+            }
         } catch (Exception ex) {
-            getLogger().error("", ex);
+            getLogger().error("Query against database {} failed.", context.getProperty(DATABASE_NAME).getValue(), ex);
             session.remove(output);
-            session.transfer(flowFile, REL_FAILURE);
+            if (flowFile != null) {
+                session.transfer(flowFile, REL_FAILURE);
+            }
         } finally {
             connection.shutdown();
         }

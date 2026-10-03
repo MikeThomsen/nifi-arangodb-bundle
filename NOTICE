@@ -1,0 +1,29 @@
+Apache NiFi ArangoDB Bundle
+Copyright 2019-2026 The original authors and contributors
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+===========================================================================
+Apache NiFi
+===========================================================================
+
+This product depends on Apache NiFi (https://nifi.apache.org/), which is
+licensed under the Apache License, Version 2.0.
+
+===========================================================================
+ArangoDB Java Driver
+===========================================================================
+
+This product depends on the ArangoDB Java driver
+(https://github.com/arangodb/arangodb-java-driver), which is licensed under
+the Apache License, Version 2.0.
+
+===========================================================================
+Testcontainers (test scope only)
+===========================================================================
+
+The integration tests depend on Testcontainers
+(https://github.com/testcontainers/testcontainers-java), which is licensed
+under the MIT License. Testcontainers is not redistributed as part of the
+NAR produced by this build.
