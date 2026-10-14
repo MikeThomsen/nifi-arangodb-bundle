@@ -49,8 +49,9 @@ test creates and drops its own database.
 
 ## Maintenance
 
-This repository started out as a human-generated work. To the extent that it is maintained going forward, it will be
-maintained primarily through AI-generated updates.
+This repository started out as human-written work. It is now managed passively with [Claude](https://claude.com/claude-code):
+ongoing maintenance, such as dependency and NiFi version upgrades, is carried out primarily through AI-generated
+updates, which are reviewed and tested before release. Expect updates to be infrequent and driven by upstream changes.
 
 ## License
 
