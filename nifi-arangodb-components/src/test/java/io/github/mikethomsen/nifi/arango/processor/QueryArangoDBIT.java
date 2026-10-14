@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.processor;
+package io.github.mikethomsen.nifi.arango.processor;
 
 import com.arangodb.ArangoCursor;
 import com.fasterxml.jackson.core.type.TypeReference;

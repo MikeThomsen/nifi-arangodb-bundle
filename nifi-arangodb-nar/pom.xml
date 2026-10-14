@@ -20,7 +20,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.nifi</groupId>
+        <groupId>io.github.mikethomsen</groupId>
         <artifactId>nifi-arangodb-bundle</artifactId>
         <version>2.0.0</version>
     </parent>
@@ -36,7 +36,7 @@
             <type>nar</type>
         </dependency>
         <dependency>
-            <groupId>org.apache.nifi</groupId>
+            <groupId>io.github.mikethomsen</groupId>
             <artifactId>nifi-arangodb-components</artifactId>
         </dependency>
     </dependencies>

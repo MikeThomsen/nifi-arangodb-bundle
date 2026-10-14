@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.arango.common;
+package io.github.mikethomsen.nifi.arango.common;
 
 import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.controller.ArangoDBClientService;
+import io.github.mikethomsen.nifi.arango.controller.ArangoDBClientService;
 import org.apache.nifi.expression.ExpressionLanguageScope;
 import org.apache.nifi.processor.util.StandardValidators;
 

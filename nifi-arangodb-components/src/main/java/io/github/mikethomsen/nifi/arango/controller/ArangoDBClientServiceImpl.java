@@ -14,8 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.controller;
+package io.github.mikethomsen.nifi.arango.controller;
 
+import org.apache.nifi.controller.ConfigurationContext;
+import org.apache.nifi.controller.AbstractControllerService;
 import com.arangodb.ArangoDB;
 import com.arangodb.Protocol;
 import com.arangodb.entity.LoadBalancingStrategy;

@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.controller;
+package io.github.mikethomsen.nifi.arango.controller;
 
+import org.apache.nifi.controller.ControllerService;
 import com.arangodb.ArangoDB;
 
 public interface ArangoDBClientService extends ControllerService {

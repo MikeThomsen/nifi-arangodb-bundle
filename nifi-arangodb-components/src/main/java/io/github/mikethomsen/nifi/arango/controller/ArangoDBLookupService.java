@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.controller;
+package io.github.mikethomsen.nifi.arango.controller;
 
+import org.apache.nifi.controller.ConfigurationContext;
 import com.arangodb.ArangoCursor;
 import com.arangodb.ArangoDB;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
-import org.apache.nifi.arango.common.ArangoClientConfiguration;
+import io.github.mikethomsen.nifi.arango.common.ArangoClientConfiguration;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.expression.ExpressionLanguageScope;

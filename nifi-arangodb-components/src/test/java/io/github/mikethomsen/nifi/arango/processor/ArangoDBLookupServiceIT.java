@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.processor;
+package io.github.mikethomsen.nifi.arango.processor;
 
 import com.arangodb.ArangoCursor;
 import com.arangodb.ArangoDB;
-import org.apache.nifi.controller.ArangoDBClientService;
-import org.apache.nifi.controller.ArangoDBClientServiceImpl;
-import org.apache.nifi.controller.ArangoDBLookupService;
+import io.github.mikethomsen.nifi.arango.controller.ArangoDBClientService;
+import io.github.mikethomsen.nifi.arango.controller.ArangoDBClientServiceImpl;
+import io.github.mikethomsen.nifi.arango.controller.ArangoDBLookupService;
 import org.apache.nifi.lookup.LookupService;
 import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.schema.access.SchemaAccessUtils;

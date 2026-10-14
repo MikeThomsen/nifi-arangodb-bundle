@@ -14,10 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.processor;
+package io.github.mikethomsen.nifi.arango.processor;
 
-import org.apache.nifi.arango.common.ArangoClientConfiguration;
-import org.apache.nifi.controller.ArangoDBClientService;
+import org.apache.nifi.processor.Relationship;
+import org.apache.nifi.processor.ProcessContext;
+import org.apache.nifi.processor.AbstractProcessor;
+import io.github.mikethomsen.nifi.arango.common.ArangoClientConfiguration;
+import io.github.mikethomsen.nifi.arango.controller.ArangoDBClientService;
 
 public abstract class AbstractArangoDBProcessor extends AbstractProcessor implements ArangoClientConfiguration {
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
